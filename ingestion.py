@@ -18,9 +18,6 @@ output_folder_path = config['output_folder_path']
 
 #############Function for data ingestion
 def merge_multiple_dataframe():
-    '''
-    Function for data ingestion
-    '''
     #check for datasets, compile them together, and write to an output file
     filenames = os.listdir(os.path.join(os.getcwd(), input_folder_path))
 
@@ -39,6 +36,7 @@ def merge_multiple_dataframe():
     result=df_list.drop_duplicates()
     result.to_csv(os.path.join(os.getcwd(), output_folder_path, 'finaldata.csv'), index=False)
 
+    return result
 
 if __name__ == '__main__':
     merge_multiple_dataframe()

@@ -21,7 +21,7 @@ model_path = os.path.join(config['output_model_path'])
 
 
 ##############Function for reporting
-def score_model():
+def report_confusion_matrix():
     #calculate a confusion matrix using the test data and the deployed model
     #write the confusion matrix to the workspace
     testdatacsv = os.path.join(os.getcwd(), test_data_path, 'testdata.csv')
@@ -41,4 +41,4 @@ def score_model():
     cfm_plot.figure.savefig(cfm_path)
 
 if __name__ == '__main__':
-    score_model()
+    report_confusion_matrix()

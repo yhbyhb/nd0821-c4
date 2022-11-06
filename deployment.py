@@ -19,7 +19,7 @@ prod_deployment_path = os.path.join(config['prod_deployment_path'])
 
 
 ####################function for deployment
-def store_model_into_pickle(model):
+def store_model_into_pickle():
     #copy the latest pickle file, the latestscore.txt value, and the ingestfiles.txt file into the deployment directory
     model_path = os.path.join(config['output_model_path']) 
     output_folder_path = config['output_folder_path']
@@ -36,4 +36,4 @@ def store_model_into_pickle(model):
 
 
 if __name__ == '__main__':
-    store_model_into_pickle(None)
+    store_model_into_pickle()

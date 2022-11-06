@@ -5,13 +5,13 @@ import pickle
 import json
 import os
 
-from diagnostics import {
+from diagnostics import (
     model_predictions,
     dataframe_summary,
     execution_time,
     missing_data,
     outdated_packages_list
-}
+)
 from scoring import score_model
 
 
@@ -22,9 +22,10 @@ app.secret_key = '1652d576-484a-49fd-913a-6879acfa6ba4'
 with open('config.json','r') as f:
     config = json.load(f) 
 
-dataset_csv_path = os.path.join(config['output_folder_path']) 
-
-prediction_model = pickle.load(open(os.path.join(os.getcwd(), config['prod_deployment_path'], "trainedmodel.pkl"), "rb"))
+dataset_csv_path = os.path.join(config['output_folder_path'])
+model_path = os.path.join(config['prod_deployment_path'])
+prediction_model_path = os.path.join(os.getcwd(), model_path, "trainedmodel.pkl")
+prediction_model = pickle.load(open(prediction_model_path, "rb"))
 
 
 #######################Prediction Endpoint
@@ -44,7 +45,9 @@ def predict():
 @app.route("/scoring", methods=['GET','OPTIONS'])
 def scoring():        
     #check the score of the deployed model
-    f1score = score_model()
+    test_data_path = os.path.join(config['test_data_path'])
+    testdata = pd.read_csv(os.path.join(os.getcwd(), test_data_path, 'testdata.csv'))
+    f1score = score_model(model_path, testdata)
     return str(f1score) #add return value (a single F1 score number)
 
 #######################Summary Statistics Endpoint
@@ -59,11 +62,11 @@ def stats():
 def diagnostics():        
     #check timing and percent NA values
     timing = execution_time()
-    missing_data = missing_data()
+    missing = missing_data()
     dependencies = outdated_packages_list()
     res = {
         'timing' : timing,
-        'missing_data' : missing_data,
+        'missing_data' : missing,
         'dependency_check' : dependencies,
     }
     return str(res)#add return value for all diagnostics
