@@ -35,6 +35,7 @@ if not has_new_files:
     print('there is no new file')
     sys.exit()
 
+print('there is new files. Ingesting new files...')
 new_data_frame = ingestion.merge_multiple_dataframe()
 
 ##################Checking for model drift
@@ -53,11 +54,13 @@ if new_f1_score < prev_f1_score:
 ##################Deciding whether to proceed, part 2
 #if you found model drift, you should proceed. otherwise, do end the process here
 if not model_drift:
+    print(f"no drift! new f1 score {new_f1_score} is higher than prev f1 score {prev_f1_score}  ")
     sys.exit()
+else:
+	print(f"model drift! prev f1 :{prev_f1_score}, new f1 {new_f1_score}")
 
-print(f"model drift! prev f1 :{prev_f1_score}, new f1 {new_f1_score}")
-
-training.train_model()
+print("Re-training...")
+os.system('python3 training.py')
 
 
 ##################Re-deployment
