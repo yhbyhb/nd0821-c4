@@ -1,0 +1,1 @@
+*/10 * * * * /Users/yhbyhb/Documents/repos/nd0821-c4/fullprocess.py
