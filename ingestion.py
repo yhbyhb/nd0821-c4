@@ -21,7 +21,9 @@ def merge_multiple_dataframe():
     #check for datasets, compile them together, and write to an output file
     filenames = os.listdir(os.path.join(os.getcwd(), input_folder_path))
 
-    df_list = pd.DataFrame()
+    df_list = pd.DataFrame(columns = ["corporation", "lastmonth_activity",
+                                    "lastyear_activity", "number_of_employees",
+                                    "exited"])
     
     record_file_path = os.path.join(os.getcwd(), output_folder_path, 'ingestedfiles.txt')
     with open(record_file_path, 'w') as record_file:

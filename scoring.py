@@ -1,11 +1,8 @@
-from flask import Flask, session, jsonify, request
 import pandas as pd
 import numpy as np
 import pickle
 import os
 from sklearn import metrics
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
 import json
 
 
@@ -28,11 +25,11 @@ def score_model(model_path, testdata):
         model = pickle.load(file)
 
     X_test = testdata[['lastmonth_activity', 'lastyear_activity', 'number_of_employees']].values.reshape(-1, 3)
-    y_test = testdata['exited'].values.reshape(-1, 1)
+    y_test = testdata['exited'].values.reshape(-1, 1).ravel()
 
     y_pred = model.predict(X_test)
 
-    f1score = metrics.f1_score(y_test, y_pred)
+    f1score = metrics.f1_score(list(y_test), list(y_pred))
 
     latest_score_file = os.path.join(os.getcwd(), model_path, 'latestscore.txt')
     with open(latest_score_file, 'w') as score_file:

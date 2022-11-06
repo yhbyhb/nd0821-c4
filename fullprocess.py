@@ -2,6 +2,8 @@ import json
 import pickle
 import os
 import sys
+import pandas as pd
+
 import training
 import scoring
 import deployment
@@ -36,7 +38,17 @@ if not has_new_files:
     sys.exit()
 
 print('there is new files. Ingesting new files...')
-new_data_frame = ingestion.merge_multiple_dataframe()
+new_df = ingestion.merge_multiple_dataframe()
+
+prev_df = pd.read_csv(os.path.join(os.getcwd(), config['output_folder_path'], "finaldata.csv"))
+new_df = prev_df.append(new_df, ignore_index=True)
+new_df.drop_duplicates()
+new_df.to_csv(os.path.join(os.getcwd(),config['output_folder_path'],"finaldata.csv"), index=False)
+
+record_file_path = os.path.join(os.getcwd(), output_folder_path, 'ingestedfiles.txt')
+with open(record_file_path, 'w') as record_file:
+    for each_filename in all_input_files:
+        record_file.write(each_filename + '\n')
 
 ##################Checking for model drift
 #check whether the score from the deployed model is different from the score from the model that uses the newest ingested data
@@ -46,7 +58,7 @@ with open(latest_score_file, 'r') as score_file:
     prev_f1_score = float(score_file.readline())
 
 model_file_path = os.path.join(os.getcwd(), prod_deployment_path)
-new_f1_score = scoring.score_model(model_file_path, new_data_frame)
+new_f1_score = scoring.score_model(model_file_path, new_df)
 model_drift = False
 if new_f1_score < prev_f1_score:
     model_drift = True
@@ -54,10 +66,10 @@ if new_f1_score < prev_f1_score:
 ##################Deciding whether to proceed, part 2
 #if you found model drift, you should proceed. otherwise, do end the process here
 if not model_drift:
-    print(f"no drift! new f1 score {new_f1_score} is higher than prev f1 score {prev_f1_score}  ")
+    print("No drift! prev f1 {} < new f1 {}".format(prev_f1_score, new_f1_score))
     sys.exit()
 else:
-	print(f"model drift! prev f1 :{prev_f1_score}, new f1 {new_f1_score}")
+	print("model drift!")
 
 print("Re-training...")
 os.system('python3 training.py')
