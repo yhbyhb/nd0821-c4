@@ -25,18 +25,17 @@ input_dir = os.path.join(os.getcwd(), config['input_folder_path'])
 input_files = os.listdir(input_dir)
 
 all_input_files = list(set(ingested + input_files))
-has_not_ingested_files = False;
+has_new_files = False;
 if len(all_input_files) > len(ingested):
-	has_not_ingested_files = True
+	has_new_files = True
 
 ##################Deciding whether to proceed, part 1
 #if you found new data, you should proceed. otherwise, do end the process here
-if not has_not_ingested_files:
-    print('there is no new ingested file')
+if not has_new_files:
+    print('there is no new file')
     sys.exit()
 
 new_data_frame = ingestion.merge_multiple_dataframe()
-
 
 ##################Checking for model drift
 #check whether the score from the deployed model is different from the score from the model that uses the newest ingested data
@@ -63,12 +62,14 @@ training.train_model()
 
 ##################Re-deployment
 #if you found evidence for model drift, re-run the deployment.py script
+print('Re-deploying')
 os.system('python3 deployment.py')
 
 ##################Diagnostics and reporting
 #run diagnostics.py and reporting.py for the re-deployed model
 os.system('python3 diagnostics.py')
 os.system('python3 reporting.py')
+os.system('python3 apicalls.py')
 
 
 
