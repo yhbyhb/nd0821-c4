@@ -14,20 +14,20 @@ dataset_csv_path = os.path.join(config['output_folder_path'])
 test_data_path = os.path.join(config['test_data_path']) 
 
 ##################Function to get model predictions
-def model_predictions():
+def model_predictions(testdatacsv=None):
     #read the deployed model and a test dataset, calculate predictions
     prod_deployment_path = os.path.join(config['prod_deployment_path']) 
 
     model_file_path = os.path.join(os.getcwd(), prod_deployment_path, 'trainedmodel.pkl')
     with open(model_file_path, 'rb') as file:
         model = pickle.load(file)
+    if (testdatacsv is None):
+        testdatacsv = os.path.join(os.getcwd(), test_data_path, 'testdata.csv')
 
-    testdata = pd.read_csv(os.path.join(os.getcwd(), test_data_path, 'testdata.csv'))
+    testdata = pd.read_csv(testdatacsv)
     X = testdata[['lastmonth_activity', 'lastyear_activity', 'number_of_employees']].values.reshape(-1, 3)
-    y = testdata['exited'].values.reshape(-1, 1)
 
     predicted = model.predict(X)
-
     return predicted
 
 ##################Function to get summary statistics
@@ -98,6 +98,9 @@ def outdated_packages_list():
         data_frame['package_name'] = names
         data_frame['current'] = cur
         data_frame['recent_available'] = recent
+
+    # print(data_frame.values.tolist())
+    return data_frame.values.tolist()
 
 
 if __name__ == '__main__':

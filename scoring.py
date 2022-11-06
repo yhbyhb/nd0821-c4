@@ -40,5 +40,7 @@ def score_model():
     with open(latest_score_file, 'w') as score_file:
         score_file.write(str(f1score))
 
+    return f1score
+
 if __name__ == '__main__':
     score_model()
