@@ -8,13 +8,13 @@ URL = "http://127.0.0.1:8000/"
 
 
 #Call each API endpoint and store the responses
-response1 = requests.post(URL+'/prediction?inputdata=testdata/testdata.csv').content
-response2 = requests.get(URL+'/scoring').content
-response3 = requests.get(URL+'/summarystats').content
-response4 = requests.get(URL+'/diagnostics').content
+response_prediction = requests.post(URL+'/prediction?inputdata=testdata/testdata.csv').content
+response_scoring = requests.get(URL+'/scoring').content
+response_stats = requests.get(URL+'/summarystats').content
+response_diag = requests.get(URL+'/diagnostics').content
 
 #combine all API responses
-responses = [response1, response2, response3, response4]
+responses = [response_prediction, response_scoring, response_stats, response_diag]
 
 #write the responses to your workspace
 with open('config.json','r') as f:

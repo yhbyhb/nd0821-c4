@@ -7,6 +7,7 @@ from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 import json
+import utils
 
 ###################Load config.json and get path variables
 with open('config.json','r') as f:
@@ -17,7 +18,7 @@ model_path = os.path.join(config['output_model_path'])
 
 
 #################Function for training the model
-def train_model():
+def train_model(input_file_path, model_output_path):
     
     #use this logistic regression for training
     logit = LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
@@ -27,16 +28,16 @@ def train_model():
                     warm_start=False)
     
     #fit the logistic regression to your data
-    csv_file_path = os.path.join(os.getcwd(), dataset_csv_path, 'finaldata.csv')
+    csv_file_path = os.path.join(os.getcwd(), input_file_path, 'finaldata.csv')
     trainingdata = pd.read_csv(csv_file_path)
-    X = trainingdata.loc[:,['lastmonth_activity', 'lastyear_activity', 'number_of_employees']].values.reshape(-1, 3)
-    y = trainingdata['exited'].values.reshape(-1, 1).ravel()
+    X, y = utils.split_data(trainingdata)
+    
     model = logit.fit(X, y)
 
     #write the trained model to your workspace in a file called trainedmodel.pkl
-    model_file_path = os.path.join(os.getcwd(), model_path, 'trainedmodel.pkl')
+    model_file_path = os.path.join(os.getcwd(), model_output_path, 'trainedmodel.pkl')
     pickle.dump(model, open(model_file_path, 'wb'))
 
 
 if __name__ == '__main__':
-    train_model()
+    train_model(dataset_csv_path, model_path)

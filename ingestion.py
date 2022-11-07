@@ -1,10 +1,7 @@
-import pandas as pd
-import numpy as np
-import os
 import json
-from datetime import datetime
-
-
+import glob
+import os
+import pandas as pd
 
 
 #############Load config.json and get input and output paths
@@ -21,21 +18,15 @@ def merge_multiple_dataframe():
     #check for datasets, compile them together, and write to an output file
     filenames = os.listdir(os.path.join(os.getcwd(), input_folder_path))
 
-    df_list = pd.DataFrame(columns = ["corporation", "lastmonth_activity",
-                                    "lastyear_activity", "number_of_employees",
-                                    "exited"])
-    
+    datasets = glob.glob(f'{input_folder_path}/*.csv')
+    df = pd.concat(map(pd.read_csv, datasets))
+
     record_file_path = os.path.join(os.getcwd(), output_folder_path, 'ingestedfiles.txt')
     with open(record_file_path, 'w') as record_file:
         for each_filename in filenames:
-            input_file_path = os.path.join(os.getcwd(), input_folder_path, each_filename)
-            # print(input_file_path)
-            data_frame = pd.read_csv(input_file_path)
-            df_list=df_list.append(data_frame)
-
             record_file.write(each_filename + '\n')
 
-    result=df_list.drop_duplicates()
+    result = df.drop_duplicates()
     result.to_csv(os.path.join(os.getcwd(), output_folder_path, 'finaldata.csv'), index=False)
 
     return result

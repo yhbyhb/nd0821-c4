@@ -4,7 +4,7 @@ import pickle
 import os
 from sklearn import metrics
 import json
-
+import utils
 
 
 #################Load config.json and get path variables
@@ -16,16 +16,13 @@ test_data_path = os.path.join(config['test_data_path'])
 testdata = pd.read_csv(os.path.join(os.getcwd(), test_data_path, 'testdata.csv'))
 
 #################Function for model scoring
-def score_model(model_path, testdata):
+def score_model(model_path, test_data_frame):
     #this function should take a trained model, load test data, and calculate an F1 score for the model relative to the test data
     #it should write the result to the latestscore.txt file
 
-    model_file_path = os.path.join(os.getcwd(), model_path, 'trainedmodel.pkl')
-    with open(model_file_path, 'rb') as file:
-        model = pickle.load(file)
+    model = utils.load_model(model_path)
 
-    X_test = testdata[['lastmonth_activity', 'lastyear_activity', 'number_of_employees']].values.reshape(-1, 3)
-    y_test = testdata['exited'].values.reshape(-1, 1).ravel()
+    X_test, y_test = utils.split_data(test_data_frame)
 
     y_pred = model.predict(X_test)
 

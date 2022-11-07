@@ -6,27 +6,30 @@ import os
 import json
 import subprocess
 
+import ingestion
+import training
+import utils
+
 ##################Load config.json and get environment variables
 with open('config.json','r') as f:
     config = json.load(f) 
 
+model_path = os.path.join(config['output_model_path'])
 dataset_csv_path = os.path.join(config['output_folder_path']) 
 test_data_path = os.path.join(config['test_data_path'])
-testdatacsv = os.path.join(os.getcwd(), test_data_path, 'testdata.csv')
+test_data_csv = os.path.join(os.getcwd(), test_data_path, 'testdata.csv')
 
 ##################Function to get model predictions
-def model_predictions(testdatacsv):
+def model_predictions(test_file_path):
     #read the deployed model and a test dataset, calculate predictions
     prod_deployment_path = os.path.join(config['prod_deployment_path']) 
+    model = utils.load_model(prod_deployment_path)
 
-    model_file_path = os.path.join(os.getcwd(), prod_deployment_path, 'trainedmodel.pkl')
-    with open(model_file_path, 'rb') as file:
-        model = pickle.load(file)
-
-    testdata = pd.read_csv(testdatacsv)
-    X = testdata[['lastmonth_activity', 'lastyear_activity', 'number_of_employees']].values.reshape(-1, 3)
+    testdata = pd.read_csv(test_file_path)
+    X, _ = utils.split_data(testdata)
 
     predicted = model.predict(X)
+
     return predicted
 
 ##################Function to get summary statistics
@@ -35,17 +38,14 @@ def dataframe_summary():
     data_path = os.path.join(os.getcwd(), dataset_csv_path, 'finaldata.csv')
     data_frame = pd.read_csv(data_path)
 
-    statistics = [
-        np.mean(data_frame['lastmonth_activity']),
-        np.median(data_frame['lastmonth_activity']),
-        np.std(data_frame['lastmonth_activity']),
-        np.mean(data_frame['lastyear_activity']),
-        np.median(data_frame['lastyear_activity']),
-        np.std(data_frame['lastyear_activity']),
-        np.mean(data_frame['number_of_employees']),
-        np.median(data_frame['number_of_employees']),
-        np.std(data_frame['number_of_employees']),
-        ]
+    data_frame, _  = utils.split_data(data_frame)
+
+    result_summary = data_frame.agg(["mean", "median", "std"])
+
+    statistics = list(result_summary['lastmonth_activity']) + \
+                 list(result_summary['lastyear_activity']) + \
+                 list(result_summary['number_of_employees'])
+
     # print(statistics)
     return statistics#return value should be a list containing all summary statistics
 
@@ -54,21 +54,22 @@ def missing_data():
     data_path = os.path.join(os.getcwd(), dataset_csv_path, 'finaldata.csv')
     data_frame = pd.read_csv(data_path)
 
-    nas=list(data_frame.isna().sum())
-    napercents=[nas[i]/len(data_frame.index) for i in range(len(nas))]
-    # print(napercents)
-    return napercents
+    missing_values_df = data_frame.isna().sum() / data_frame.shape[0]
+    return missing_values_df.values.tolist()
 
 ##################Function to get timings
 def execution_time():
     #calculate timing of training.py and ingestion.py
+    iter = 1000
     starttime = timeit.default_timer()
-    os.system('python3 ingestion.py')
-    ingestion_timing = timeit.default_timer() - starttime
+    for i in range(iter):
+        ingestion.merge_multiple_dataframe()
+    ingestion_timing = (timeit.default_timer() - starttime) / iter
 
     starttime = timeit.default_timer()
-    os.system('python3 training.py')
-    training_timing = timeit.default_timer() - starttime
+    for i in range(iter):
+        training.train_model(dataset_csv_path, model_path)
+    training_timing = (timeit.default_timer() - starttime) / iter
     # print(ingestion_timing, training_timing)
     return ingestion_timing, training_timing  #return a list of 2 timing values in seconds
 
@@ -103,7 +104,7 @@ def outdated_packages_list():
 
 
 if __name__ == '__main__':
-    model_predictions(testdatacsv)
+    model_predictions(test_data_csv)
     dataframe_summary()
     missing_data()
     execution_time()

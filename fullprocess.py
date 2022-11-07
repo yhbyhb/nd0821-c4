@@ -66,10 +66,10 @@ if new_f1_score < prev_f1_score:
 ##################Deciding whether to proceed, part 2
 #if you found model drift, you should proceed. otherwise, do end the process here
 if not model_drift:
-    print("No drift! prev f1 {} < new f1 {}".format(prev_f1_score, new_f1_score))
+    print(f"No drift! prev f1 {prev_f1_score} < new f1 {new_f1_score}")
     sys.exit()
 else:
-	print("model drift!")
+    print(f"model drift! prev f1 {prev_f1_score} > new f1 {new_f1_score}")
 
 print("Re-training...")
 os.system('python3 training.py')
@@ -85,9 +85,3 @@ os.system('python3 deployment.py')
 os.system('python3 diagnostics.py')
 os.system('python3 reporting.py')
 os.system('python3 apicalls.py')
-
-
-
-
-
-
