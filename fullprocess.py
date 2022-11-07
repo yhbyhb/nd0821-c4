@@ -41,7 +41,7 @@ print('there is new files. Ingesting new files...')
 new_df = ingestion.merge_multiple_dataframe()
 
 prev_df = pd.read_csv(os.path.join(os.getcwd(), config['output_folder_path'], "finaldata.csv"))
-new_df = prev_df.append(new_df, ignore_index=True)
+new_df = pd.concat([prev_df, new_df])
 new_df.drop_duplicates()
 new_df.to_csv(os.path.join(os.getcwd(),config['output_folder_path'],"finaldata.csv"), index=False)
 
